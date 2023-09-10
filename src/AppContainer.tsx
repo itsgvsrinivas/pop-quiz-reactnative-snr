@@ -1,48 +1,38 @@
 import {NavigationContainer} from '@react-navigation/native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import React from 'react';
-import Dashboard from './screens/Dashboard';
-import Profile from './screens/Profile';
-import WatchList from './screens/WatchList';
-import Feather from 'react-native-vector-icons/Feather';
 
-const Tab = createBottomTabNavigator();
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import Details from './screens/Details';
+import SearchList from './screens/SearchList';
+import Login from './screens/Login';
+import DasboardTabs from './navigation/DasboardTabs';
+
+const Stack = createNativeStackNavigator();
+
+//cleanup
+/* function Tabs() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="Home" component={Dashboard} />
+      <Tab.Screen name="WatchList" component={WatchList} />
+      <Tab.Screen name="Profile" component={Profile} />
+    </Tab.Navigator>
+  );
+} */
 
 const AppContainer = () => {
   return (
     <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen
-          name="Home"
-          component={Dashboard}
-          options={{
-            tabBarLabel: 'Home',
-            tabBarIcon: ({color, size}) => (
-              <Feather name="home" color={color} size={size} />
-            ),
-          }}
+      <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Stack.Screen
+          name="Tabs"
+          component={DasboardTabs}
+          options={{headerShown: false}}
         />
-        <Tab.Screen
-          name="WatchList"
-          component={WatchList}
-          options={{
-            tabBarLabel: 'WatchList',
-            tabBarIcon: ({color, size}) => (
-              <Feather name="heart" color={color} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Profile"
-          component={Profile}
-          options={{
-            tabBarLabel: 'Profile',
-            tabBarIcon: ({color, size}) => (
-              <Feather name="user" color={color} size={size} />
-            ),
-          }}
-        />
-      </Tab.Navigator>
+        <Stack.Screen name="Details" component={Details} />
+        <Stack.Screen name="SearchList" component={SearchList} />
+        <Stack.Screen name="Login" component={Login} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 };
