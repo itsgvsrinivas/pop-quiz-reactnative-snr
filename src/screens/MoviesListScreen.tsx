@@ -5,16 +5,20 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView,
   FlatList,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {getSearchReultsList} from '../services/api';
-import {MEDIUM_GREY, BLUE, GREY_GHOST} from '../styles/colors';
+import {
+  getFavoriteMovies,
+  getRatedMovies,
+  getSearchReultsList,
+} from '../services/api';
+import {MEDIUM_GREY, BLUE} from '../styles/colors';
 import {FONTS} from '../styles/fonts';
 import {BASE_IMAGE_URL} from '../utils/constants';
+import {FAVOURITES_TYPE, RATINGS_TYPE, SEARCH_TYPE} from '../utils/data';
 
-const SearchList = ({route, navigation}) => {
+const MoviesListScreen = ({route, navigation}) => {
   const [searchCountInfo, setSearchCountInfo] = useState('');
   const [movieList, setMovieList] = useState([]);
 
@@ -23,16 +27,26 @@ const SearchList = ({route, navigation}) => {
   }, []);
 
   const init = async () => {
-    console.log('[SearchList] >>> [init] route: ', route.params?.item);
-    const item = route.params?.item;
-    const response = await getSearchReultsList(item);
+    console.log('[MoviesListScreen] >>> [init] route: ', route.params?.item);
+    const type = route.params?.type;
+    let response = '';
+    if (type === SEARCH_TYPE) {
+      const searchText = route.params?.searchText;
+      response = await getSearchReultsList(searchText);
+      setSearchCountInfo(`${response.length} movies with "${searchText}"`);
+    } else if (type === FAVOURITES_TYPE) {
+      const accountId = '';
+      response = await getFavoriteMovies(accountId);
+    } else if (type === RATINGS_TYPE) {
+      const accountId = '';
+      response = await getRatedMovies(accountId);
+    }
     setMovieList(response);
-    setSearchCountInfo(`${response.length} movies with "${item}"`);
   };
 
   const onPressBack = () => {
     navigation.goBack();
-    console.log(`[SearchList] >>> [onPressBack`);
+    console.log(`[MoviesListScreen] >>> [onPressBack`);
   };
 
   const renderItem = ({item, index}) => {
@@ -68,8 +82,8 @@ const SearchList = ({route, navigation}) => {
 
   const onItemPress = item => {
     console.log('[Dashboard] >>> [onItemPress]', item);
-    navigation.navigate('Details', {item});
-    //navigation.navigate('HomeStack', {screen: 'Details'});
+    navigation.navigate('DetailScreen', {item});
+    //navigation.navigate('HomeStack', {screen: 'DetailScreen'});
   };
 
   return (
@@ -206,4 +220,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SearchList;
+export default MoviesListScreen;

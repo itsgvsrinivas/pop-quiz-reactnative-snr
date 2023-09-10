@@ -2,9 +2,9 @@ import {NavigationContainer} from '@react-navigation/native';
 import React from 'react';
 
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import Details from './screens/Details';
-import SearchList from './screens/SearchList';
-import Login from './screens/Login';
+import DetailScreen from './screens/DetailScreen';
+import MoviesListScreen from './screens/MoviesListScreen';
+import LoginScreen from './screens/LoginScreen';
 import DasboardTabs from './navigation/DasboardTabs';
 
 const Stack = createNativeStackNavigator();
@@ -23,15 +23,17 @@ const Stack = createNativeStackNavigator();
 const AppContainer = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{headerShown: false}}>
+      <Stack.Navigator
+        screenOptions={{headerShown: false}}
+        initialRouteName="LoginScreen">
         <Stack.Screen
           name="Tabs"
           component={DasboardTabs}
           options={{headerShown: false}}
         />
-        <Stack.Screen name="Details" component={Details} />
-        <Stack.Screen name="SearchList" component={SearchList} />
-        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="LoginScreen" component={LoginScreen} />
+        <Stack.Screen name="DetailScreen" component={DetailScreen} />
+        <Stack.Screen name="MoviesListScreen" component={MoviesListScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

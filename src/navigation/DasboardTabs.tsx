@@ -26,7 +26,7 @@ function DasboardTabs() {
         name="WatchListTab"
         component={WatchListTab}
         options={{
-          tabBarLabel: 'WatchListTab',
+          tabBarLabel: 'WatchList',
           tabBarIcon: ({color, size}) => (
             <Feather name="heart" color={color} size={size} />
           ),
@@ -36,7 +36,7 @@ function DasboardTabs() {
         name="ProfileTab"
         component={ProfileTab}
         options={{
-          tabBarLabel: 'ProfileTab',
+          tabBarLabel: 'Profile',
           tabBarIcon: ({color, size}) => (
             <Feather name="user" color={color} size={size} />
           ),

@@ -68,8 +68,8 @@ const WatchListTab = ({route, navigation}) => {
 
   const onItemPress = item => {
     console.log('[Dashboard] >>> [onItemPress]', item);
-    navigation.navigate('Details', {item});
-    //navigation.navigate('HomeStack', {screen: 'Details'});
+    navigation.navigate('DetailScreen', {item});
+    //navigation.navigate('HomeStack', {screen: 'DetailScreen'});
   };
 
   return (
@@ -77,7 +77,7 @@ const WatchListTab = ({route, navigation}) => {
       <View>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headingTitle}>My watchlist</Text>
+          <Text style={styles.headingTitle}>My Watchlist</Text>
         </View>
 
         <View style={styles.mainContainer}>

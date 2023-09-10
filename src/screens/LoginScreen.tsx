@@ -13,55 +13,82 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {MEDIUM_GREY} from '../styles/colors';
 import {FONTS} from '../styles/fonts';
 import {
+  addRating,
+  addToWatchList,
   authenticateUser,
-  clearSession,
+  deleteRating,
+  getFavoriteMovies,
+  getReview,
   getSessionId,
   getToken,
+  getUserInfo,
+  getWatchListMovies,
 } from '../services/api';
+import {useDispatch} from 'react-redux';
+import {login} from '../reduxStore/slice/UserSlice';
+import {
+  PASSWORD_PLACEHOLDER,
+  RESET_PASSWORD,
+  USERNAME_PLACEHOLDER,
+} from '../utils/strings';
 
-const Login = ({route, navigation}) => {
+const LoginScreen = ({route, navigation}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [token, setToken] = useState('');
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     init();
   }, []);
 
   const init = async () => {
-    console.log('[Login] >>> [init]');
+    console.log('[LoginScreen] >>> [init]');
     const response = await getToken();
-    console.log('[Login] >>> [init] response:', response);
-    const token = response.request_token;
-    setToken(token);
-    console.log('[Login] >>> [init] response:', token);
+    const userToken = response.request_token;
+    setToken(userToken);
+    console.log('[LoginScreen] >>> [init] response:', token);
   };
 
   const onHandleLogin = async () => {
-    console.log('[Login] >>> [onHandleLogin]');
-    //setItemWatchlist(!isItemWatchlist);
-    //make an api call to add to watchlist
-    const response = await authenticateUser(username, password, token);
-    console.log('[Login] >>> [init] response:', response);
+    console.log('[LoginScreen] >>> [onHandleLogin]');
 
-    //const response = await clearSession(token);
-    const response1 = await getSessionId(token);
-    console.log('[Login] >>> [init] response1:', response1);
-    if (response1?.success) {
-      const session_id = response1?.session_id;
-      console.log('[Login] >>> [init] session_id:', session_id);
-      navigation.canGoBack() && navigation.goBack();
+    const userResponse = await authenticateUser(username, password, token);
+    console.log('[LoginScreen] >>> [init] response:', userResponse);
+    const sessionResponse = await getSessionId(token);
+    console.log('[LoginScreen] >>> [init] sessionResponse:', sessionResponse);
+    if (sessionResponse?.success) {
+      const sessionId = sessionResponse?.session_id;
+      console.log('[LoginScreen] >>> [init] sessionId:', sessionId);
+      const userInfoResponse = await getUserInfo(sessionId);
+      const accountId = userInfoResponse?.id;
+      const userName = userInfoResponse?.username;
+      console.log(
+        '[LoginScreen] >>> [init] userInfoResponse:',
+        userInfoResponse,
+      );
+      const userInfo = {
+        userName: userName,
+        token: token,
+        sessionId: sessionId,
+        accountId: accountId,
+      };
+      dispatch(login(userInfo));
+
+      //navigate to dashboard
+      navigation.navigate('Tabs', {
+        screen: 'Dashboard',
+      });
     } else {
       //"Invalid username and/or password"
+      onHandleFailure('');
     }
   };
 
-  const onHandleClose = () => {
-    console.log('[Login] >>> [onHandleLogin11]');
-    //setItemWatchlist(!isItemWatchlist);
-    //make an api call to add to watchlist
-    navigation.canGoBack() && navigation.goBack();
-  };
+  function onHandleFailure(info: string) {
+    console.log('[LoginScreen] >>> [onHandleFailure]', info);
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -72,12 +99,6 @@ const Login = ({route, navigation}) => {
               style={styles.logo}
               source={require('../assets/images/tmdb.png')}
             />
-            <TouchableOpacity onPress={() => onHandleClose()}>
-              <Image
-                style={styles.close}
-                source={require('../assets/images/close.png')}
-              />
-            </TouchableOpacity>
           </View>
 
           <View style={styles.wrapper}>
@@ -93,25 +114,27 @@ const Login = ({route, navigation}) => {
             <View style={[styles.inputView, styles.vspacer]}>
               <TextInput
                 style={styles.TextInput}
-                placeholder="Username"
+                placeholder={USERNAME_PLACEHOLDER}
                 placeholderTextColor="#003f5c"
-                onChangeText={username => setUsername(username)}
+                onChangeText={inputUsername => setUsername(inputUsername)}
               />
             </View>
             <View style={styles.inputView}>
               <TextInput
                 style={styles.TextInput}
-                placeholder="Password."
+                placeholder={PASSWORD_PLACEHOLDER}
                 placeholderTextColor="#003f5c"
                 secureTextEntry={true}
-                onChangeText={password => setPassword(password)}
+                onChangeText={inputPassword => setPassword(inputPassword)}
               />
             </View>
             <TouchableOpacity style={styles.loginBtn} onPress={onHandleLogin}>
               <Text style={styles.loginText}>LOGIN</Text>
             </TouchableOpacity>
             <TouchableOpacity>
-              <Text style={[styles.reset, styles.vspacer]}>Reset Password</Text>
+              <Text style={[styles.reset, styles.vspacer]}>
+                {RESET_PASSWORD}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -120,7 +143,7 @@ const Login = ({route, navigation}) => {
   );
 };
 
-export default Login;
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -204,6 +227,7 @@ const styles = StyleSheet.create({
     height: 30,
     marginBottom: 30,
     color: '#01b4e4',
+    fontFamily: FONTS.MontserratSemiBold,
   },
   loginBtn: {
     width: '80%',

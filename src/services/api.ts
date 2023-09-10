@@ -102,8 +102,8 @@ export const authenticateUser = async (
     headers,
   };
   const data = {
-    username: 'alekhyabairaboina',
-    password: 'varunbairaboina',
+    username: 'gvsrinivas', //'alekhyabairaboina',
+    password: '94920@sri', //'varunbairaboina',
     request_token: `${requestToken}`,
   };
   const response = await axios.post(
@@ -118,7 +118,211 @@ export const authenticateUser = async (
   }
 };
 
-export const clearSession = async token => {
+export const getUserInfo = async (session_id: string) => {
+  const headers = {
+    accept: ACCEPT_APP_JSON,
+    'content-type': ACCEPT_APP_JSON,
+    Authorization: `Bearer ${TOKEN}`,
+  };
+  let config = {
+    method: METHOD_POST,
+    headers,
+  };
+
+  const response = await axios.get(
+    `https://api.themoviedb.org/3/account?api_key=${API_KEY}&session_id=${session_id}`,
+    config,
+  );
+  if (response.status < 400) {
+    return response?.data;
+  } else {
+    return null;
+  }
+};
+
+export const addToWatchList = async (account_id: string) => {
+  const headers = {
+    accept: ACCEPT_APP_JSON,
+    'content-type': ACCEPT_APP_JSON,
+    Authorization: `Bearer ${TOKEN}`,
+  };
+  let config = {
+    method: METHOD_POST,
+    headers,
+  };
+  const data = {media_type: 'movie', media_id: 11, watchlist: true};
+
+  const response = await axios.post(
+    `https://api.themoviedb.org/3/account/${account_id}/watchlist`,
+    data,
+    config,
+  );
+  if (response.status < 400) {
+    return response?.data;
+  } else {
+    return null;
+  }
+};
+
+export const addToFavourite = async (account_id: string) => {
+  const headers = {
+    accept: ACCEPT_APP_JSON,
+    'content-type': ACCEPT_APP_JSON,
+    Authorization: `Bearer ${TOKEN}`,
+  };
+  let config = {
+    method: METHOD_POST,
+    headers,
+  };
+  const data = {media_type: 'movie', media_id: 11, favorite: true};
+
+  const response = await axios.post(
+    `https://api.themoviedb.org/3/account/${account_id}/favorite`,
+    data,
+    config,
+  );
+  if (response.status < 400) {
+    return response?.data;
+  } else {
+    return null;
+  }
+};
+
+export const addRating = async (movie_id: string, ratingValue: string) => {
+  const headers = {
+    accept: ACCEPT_APP_JSON,
+    'content-type': ACCEPT_APP_JSON,
+    Authorization: `Bearer ${TOKEN}`,
+  };
+  let config = {
+    method: METHOD_POST,
+    headers,
+  };
+  const data = {value: ratingValue};
+
+  const response = await axios.post(
+    `https://api.themoviedb.org/3/movie/${movie_id}/rating`,
+    data,
+    config,
+  );
+  if (response.status < 400) {
+    return response?.data;
+  } else {
+    return null;
+  }
+};
+
+export const deleteRating = async (movie_id: string) => {
+  const headers = {
+    accept: ACCEPT_APP_JSON,
+    'content-type': ACCEPT_APP_JSON,
+    Authorization: `Bearer ${TOKEN}`,
+  };
+  let config = {
+    method: METHOD_DELETE,
+    headers,
+  };
+
+  const response = await axios.delete(
+    `https://api.themoviedb.org/3/movie/${movie_id}/rating`,
+    config,
+  );
+  if (response.status < 400) {
+    return response?.data;
+  } else {
+    return null;
+  }
+};
+
+export const getWatchListMovies = async (account_id: string) => {
+  const headers = {
+    accept: ACCEPT_APP_JSON,
+    'content-type': ACCEPT_APP_JSON,
+    Authorization: `Bearer ${TOKEN}`,
+  };
+  let config = {
+    method: METHOD_GET,
+    headers,
+  };
+
+  const response = await axios.get(
+    `https://api.themoviedb.org/3/account/${account_id}/watchlist/movies`,
+    config,
+  );
+  if (response.status < 400) {
+    return response?.data;
+  } else {
+    return null;
+  }
+};
+
+export const getFavoriteMovies = async (account_id: string) => {
+  const headers = {
+    accept: ACCEPT_APP_JSON,
+    'content-type': ACCEPT_APP_JSON,
+    Authorization: `Bearer ${TOKEN}`,
+  };
+  let config = {
+    method: METHOD_GET,
+    headers,
+  };
+
+  const response = await axios.get(
+    `https://api.themoviedb.org/3/account/${account_id}/favorite/movies`,
+    config,
+  );
+  if (response.status < 400) {
+    return response?.data;
+  } else {
+    return null;
+  }
+};
+
+export const getRatedMovies = async (account_id: string) => {
+  const headers = {
+    accept: ACCEPT_APP_JSON,
+    'content-type': ACCEPT_APP_JSON,
+    Authorization: `Bearer ${TOKEN}`,
+  };
+  let config = {
+    method: METHOD_GET,
+    headers,
+  };
+
+  const response = await axios.get(
+    `https://api.themoviedb.org/3/account/${account_id}/rated/movies`,
+    config,
+  );
+  if (response.status < 400) {
+    return response?.data;
+  } else {
+    return null;
+  }
+};
+
+export const getReview = async (movie_id: string) => {
+  const headers = {
+    accept: ACCEPT_APP_JSON,
+    'content-type': ACCEPT_APP_JSON,
+    Authorization: `Bearer ${TOKEN}`,
+  };
+  let config = {
+    method: METHOD_GET,
+    headers,
+  };
+
+  const response = await axios.get(
+    `https://api.themoviedb.org/3/movie/${movie_id}/reviews`,
+    config,
+  );
+  if (response.status < 400) {
+    return response?.data;
+  } else {
+    return null;
+  }
+};
+
+export const clearSession = async (token: string) => {
   const headers = {
     accept: ACCEPT_APP_JSON,
     'content-type': ACCEPT_APP_JSON,

@@ -12,7 +12,7 @@ import {MEDIUM_GREY} from '../styles/colors';
 import {FONTS} from '../styles/fonts';
 import {BASE_IMAGE_URL} from '../utils/constants';
 
-const Details = ({route, navigation}) => {
+const DetailScreen = ({route, navigation}) => {
   const [item, setItem] = useState('');
   const [isItemWatchlist, setItemWatchlist] = useState(false);
 
@@ -24,18 +24,18 @@ const Details = ({route, navigation}) => {
   }, []);
 
   const init = () => {
-    console.log('[Details] >>> [init] route: ', route.params?.item);
+    console.log('[DetailScreen] >>> [init] route: ', route.params?.item);
     const item = route.params?.item;
     setItem(item);
     //make an api call to check if the item is in watchlist
     setItemWatchlist(isItemWatchlist);
-    console.log('[Details] >>> [init] item: ', item);
+    console.log('[DetailScreen] >>> [init] item: ', item);
   };
 
   const onPressBack = () => {
-    console.log('[Details] >>> [onPressBack]');
+    console.log('[DetailScreen] >>> [onPressBack]');
     navigation.canGoBack() && navigation.goBack();
-    //navigation.navigate('Details', {item});
+    //navigation.navigate('DetailScreen', {item});
     //navigation.navigate('HomeStack', {screen: 'Dashboard'});
     /*  navigation.navigate('HomeStack', {
       screen: 'Dashboard',
@@ -52,7 +52,7 @@ const Details = ({route, navigation}) => {
   };
 
   const onPressLike = () => {
-    console.log('[Details] >>> [onPressLike]', !isItemWatchlist);
+    console.log('[DetailScreen] >>> [onPressLike]', !isItemWatchlist);
     setItemWatchlist(!isItemWatchlist);
     //make an api call to add to watchlist
   };
@@ -97,7 +97,7 @@ const Details = ({route, navigation}) => {
               style={[
                 styles.desc,
                 styles.spacing,
-              ]}>{`User score: ${item.vote_average} (${item.vote_count} votes)`}</Text>
+              ]}>{`User score: ${item.vote_average}/10 (${item.vote_count} votes)`}</Text>
             <Text style={[styles.desc, styles.spacing]}>{item?.overview}</Text>
           </View>
         </View>
@@ -161,4 +161,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Details;
+export default DetailScreen;

@@ -15,12 +15,21 @@ import {BLUE, MEDIUM_GREY, GREY_GHOST} from '../../styles/colors';
 import {FONTS} from '../../styles/fonts';
 import {getTerndingMovieList} from '../../services/api';
 import {BASE_IMAGE_URL} from '../../utils/constants';
+import {SEARCH_TYPE} from '../../utils/data';
+import {useSelector, useDispatch} from 'react-redux';
+import {logout} from '../../reduxStore/slice/UserSlice';
 
 const HomeTab = ({navigation}) => {
   const [movieList, setMovieList] = useState([]);
   const [pageNo, setPageNo] = useState(1);
   const [text, onChangeText] = React.useState('');
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+
+  const dispatch = useDispatch();
+  const userName = useSelector(state => state.user.userName);
+  const user = useSelector(state => state.user);
+  console.log('[HomeTab] >>> [init] user:', user);
+
+  const isUserLoggedIn = userName === '' ? false : true;
 
   const loginImg = require('../../assets/images/login.png');
   const logoutImg = require('../../assets/images/logout.png');
@@ -30,7 +39,8 @@ const HomeTab = ({navigation}) => {
   }, []);
 
   const init = async () => {
-    console.log('[HomeTab] >>> [init] pageNo:', pageNo);
+    console.log('[HomeTab] >>> [init] isUserLoggedIn:', isUserLoggedIn);
+    console.log('[HomeTab] >>> [init] userName:', userName);
     const response = await getTerndingMovieList();
     const data = movieList ? [...movieList, ...response] : response;
     setMovieList(data);
@@ -61,8 +71,8 @@ const HomeTab = ({navigation}) => {
 
   const onItemPress = item => {
     console.log('[HomeTab] >>> [onItemPress]', item);
-    navigation.navigate('Details', {item});
-    //navigation.navigate('HomeStack', {screen: 'Details'});
+    navigation.navigate('DetailScreen', {item});
+    //navigation.navigate('HomeStack', {screen: 'DetailScreen'});
   };
 
   const handleClearSearch = () => {
@@ -73,15 +83,18 @@ const HomeTab = ({navigation}) => {
   const handleSearch = () => {
     console.log('[HomeTab] >>> [handleSearch]');
     //make an api call to get search result
-    //navigation.navigate('SearchList', {item: text});
-    navigation.navigate('SearchList', {item: 'Villan'});
+    //navigation.navigate('MoviesListScreen', {item: text});
+    navigation.navigate('MoviesListScreen', {
+      type: SEARCH_TYPE,
+      searchText: 'Villan',
+    });
   };
 
-  const onHandleLogin = () => {
-    console.log('[Details] >>> [onHandleLogin11]');
-    //setItemWatchlist(!isItemWatchlist);
-    //make an api call to add to watchlist
-    navigation.navigate('Login');
+  const onHandleLogout = () => {
+    console.log('[DetailScreen] >>> [onHandleLogin11]');
+    dispatch(logout());
+    console.log('[HomeTab] >>> [onHandleLogout] user:', user);
+    navigation.navigate('LoginScreen');
   };
 
   return (
@@ -92,7 +105,7 @@ const HomeTab = ({navigation}) => {
             style={styles.logo}
             source={require('../../assets/images/tmdb.png')}
           />
-          <TouchableOpacity onPress={() => onHandleLogin()}>
+          <TouchableOpacity onPress={() => onHandleLogout()}>
             <Image
               style={styles.loginImg}
               source={isUserLoggedIn ? loginImg : logoutImg}
