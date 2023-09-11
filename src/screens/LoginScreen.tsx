@@ -9,27 +9,13 @@ import {
 } from 'react-native';
 
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {
-  BLUE_BERLIN,
-  BLUE_BRIGHT,
-  DARK_GREY,
-  GREY,
-  LIGHT_GREY,
-  MEDIUM_GREY,
-  PLACEHOLDER_TEXT,
-} from '../styles/colors';
+import {BLUE_BERLIN, BLUE_BRIGHT, GREY, MEDIUM_GREY} from '../styles/colors';
 import {FONTS} from '../styles/fonts';
 import {
-  addRating,
-  addToWatchList,
   authenticateUser,
-  deleteRating,
-  getFavoriteMovies,
-  getReview,
   getSessionId,
   getToken,
   getUserInfo,
-  getWatchListMovies,
 } from '../services/api';
 import {useDispatch} from 'react-redux';
 import {login} from '../reduxStore/slice/UserSlice';
@@ -37,18 +23,25 @@ import {
   COMMON_ERROR_MSG,
   LOGIN_SUB_TITLE,
   LOGIN_TITLE,
+  NETWORK_CONNECTION_ERROR,
   PASSWORD_PLACEHOLDER,
   RESET_PASSWORD,
   SIGN_UP,
   USERNAME_PLACEHOLDER,
+  USER_DETAILS_EMPTY_ERROR,
 } from '../utils/strings';
 import {RESET_PASSWORD_URL, SIGNUP_URL} from '../utils/url';
-import {openUrl, showToast} from '../utils/utility';
+import {
+  isEmpty,
+  isNetworkAvailable,
+  openUrl,
+  showToast,
+} from '../utils/utility';
 import {HOME_TAB, TAB} from '../navigation/NavigationConstant';
 TextLabel;
 import TextLabel from '../components/TextLabel';
 import TextInputLabel from '../components/TextInputLabel';
-import Assets from '../assets/images';
+import imageAssets from '../assets/images';
 
 const LoginScreen = ({route, navigation}) => {
   const [username, setUsername] = useState('');
@@ -58,45 +51,80 @@ const LoginScreen = ({route, navigation}) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    init();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      init();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const init = async () => {
-    const response = await getToken();
-    const userToken = response.request_token;
-    setToken(userToken);
+    getRequestToken();
+  };
+
+  const getRequestToken = async () => {
+    try {
+      //make an api call to get token
+      const response = await getToken();
+      if (response.success) {
+        const requestToken = response.request_token;
+        setToken(requestToken);
+        console.log('[LoginScreen] >>> [getRequestToken]:', requestToken);
+      }
+    } catch (e) {
+      console.log('[LoginScreen] >>> [getRequestToken] [error]: ', e);
+    }
   };
 
   /* Handle user login */
   const onHandleLogin = async () => {
     console.log('[LoginScreen] >>> [onHandleLogin]');
     try {
+      if (isEmpty(username) || isEmpty(password)) {
+        showToast('error', '', USER_DETAILS_EMPTY_ERROR);
+        return;
+      }
+
+      const isConnected = await isNetworkAvailable();
+      if (!isConnected) {
+        showToast('error', '', NETWORK_CONNECTION_ERROR);
+        return;
+      }
+      //check if token is not empty
+      if (token === '') {
+        await getRequestToken();
+      }
+
       const userResponse = await authenticateUser(username, password, token);
-      console.log('[LoginScreen] >>> [init] userResponse:', userResponse);
+      if (!userResponse?.success) {
+        showToast('error', '', COMMON_ERROR_MSG);
+        return;
+      }
+
       const sessionResponse = await getSessionId(token);
-      console.log('[LoginScreen] >>> [init] sessionResponse:', sessionResponse);
       if (sessionResponse?.success) {
         const sessionId = sessionResponse?.session_id;
-        console.log('[LoginScreen] >>> [init] sessionId:', sessionId);
         const userInfoResponse = await getUserInfo(sessionId);
-        const accountId = userInfoResponse?.id;
-        const userName = userInfoResponse?.username;
-        console.log(
-          '[LoginScreen] >>> [init] userInfoResponse:',
-          userInfoResponse,
-        );
-        const userInfo = {
-          userName: userName,
-          token: token,
-          sessionId: sessionId,
-          accountId: accountId,
-        };
-        dispatch(login(userInfo));
-
-        //navigate to HomeTab - dashboard
-        navigation.navigate(TAB, {
-          screen: HOME_TAB,
-        });
+        if (userInfoResponse?.id) {
+          const accountId = userInfoResponse?.id;
+          const userName = userInfoResponse?.username;
+          console.log(
+            '[LoginScreen] >>> [init] userInfoResponse:',
+            userInfoResponse,
+          );
+          const userInfo = {
+            userName: userName,
+            token: token,
+            sessionId: sessionId,
+            accountId: accountId,
+          };
+          dispatch(login(userInfo));
+          //navigate to HomeTab - dashboard
+          navigation.navigate(TAB, {
+            screen: HOME_TAB,
+          });
+        } else {
+          showToast('error', '', COMMON_ERROR_MSG);
+        }
       } else {
         //"Invalid username and/or password"
         showToast('error', '', 'Invalid username and/or password');
@@ -131,7 +159,7 @@ const LoginScreen = ({route, navigation}) => {
         <View>
           {/* Header */}
           <View style={styles.mainHeader}>
-            <Image style={styles.logo} source={Assets.tmdb} />
+            <Image style={styles.logo} source={imageAssets.tmdb} />
           </View>
 
           {/* Title */}
@@ -163,6 +191,8 @@ const LoginScreen = ({route, navigation}) => {
               placeholderTextColor={GREY}
               onChangeText={inputUsername => setUsername(inputUsername)}
               label="Username"
+              autoCapitalize="none"
+              autoCorrect={false}
             />
             <View style={styles.vspacer} />
 
@@ -174,6 +204,9 @@ const LoginScreen = ({route, navigation}) => {
               placeholderTextColor={GREY}
               onChangeText={inputPassword => setPassword(inputPassword)}
               label="Password"
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry={true}
             />
 
             <View style={styles.vspacer} />

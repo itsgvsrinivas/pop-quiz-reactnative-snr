@@ -2,7 +2,6 @@ import React from 'react';
 import {View, StyleSheet, Image, TouchableOpacity, Text} from 'react-native';
 import {SHADOW_LIGHT} from '../styles/colors';
 import {FONTS} from '../styles/fonts';
-import PropTypes from "prop-types";
 
 const RectTile = ({imageSource, text, onPress}): React.JSX.Element => {
   function handlePress() {

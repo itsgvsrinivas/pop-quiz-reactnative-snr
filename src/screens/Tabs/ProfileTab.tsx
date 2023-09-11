@@ -1,35 +1,16 @@
 import React, {useState, useEffect} from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import {StyleSheet, Text, View, Image, ScrollView} from 'react-native';
 
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {BLUE_BERLIN, MEDIUM_GREY, SHADOW_LIGHT} from '../../styles/colors';
+import {BLUE_BERLIN, MEDIUM_GREY} from '../../styles/colors';
 import {FONTS} from '../../styles/fonts';
-import {
-  addRating,
-  addToWatchList,
-  authenticateUser,
-  deleteRating,
-  getFavoriteMovies,
-  getReview,
-  getSessionId,
-  getUserInfo,
-  getWatchListMovies,
-} from '../../services/api';
 import {FAVOURITES_TYPE, RATINGS_TYPE} from '../../utils/data';
 import {useSelector} from 'react-redux';
-import {State} from 'react-native-gesture-handler';
 import {MOVIES_LIST_SCREEN} from '../../navigation/NavigationConstant';
 import {MY_FAVOURITES, MY_RATINGS} from '../../utils/strings';
 import RectTile from '../../components/RectTile';
 import {AvatarCircle} from '../../components/AvatarCircle';
-import assets from '../../assets/images';
+import imageAssets from '../../assets/images';
 
 const ProfileTab = ({route, navigation}) => {
   const [name, setName] = useState('');
@@ -62,7 +43,7 @@ const ProfileTab = ({route, navigation}) => {
       <ScrollView>
         <View>
           <View style={styles.mainHeader}>
-            <Image style={styles.logo} source={assets.tmdb} />
+            <Image style={styles.logo} source={imageAssets.tmdb} />
           </View>
           <View style={styles.wrapper}>
             <AvatarCircle name={name} />
@@ -73,13 +54,13 @@ const ProfileTab = ({route, navigation}) => {
             <View style={[styles.tileMainWrapper, styles.vspacer]}>
               {/* My Favourites */}
               <RectTile
-                imageSource={assets.defaultLike}
+                imageSource={imageAssets.defaultLike}
                 text={MY_FAVOURITES}
                 onPress={onPressMyFavourites}
               />
               {/* My Ratings */}
               <RectTile
-                imageSource={assets.starBlack}
+                imageSource={imageAssets.starBlack}
                 text={MY_RATINGS}
                 onPress={onPressMyRatings}
               />

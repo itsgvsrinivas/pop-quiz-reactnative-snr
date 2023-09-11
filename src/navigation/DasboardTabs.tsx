@@ -30,7 +30,7 @@ function DasboardTabs() {
         options={{
           tabBarLabel: 'WatchList',
           tabBarIcon: ({color, size}) => (
-            <Feather name="heart" color={color} size={size} />
+            <Feather name="bookmark" color={color} size={size} />
           ),
         }}
       />

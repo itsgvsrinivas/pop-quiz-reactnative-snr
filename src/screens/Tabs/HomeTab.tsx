@@ -13,7 +13,11 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {BLUE, MEDIUM_GREY, GREY_GHOST, WHITE} from '../../styles/colors';
 import {FONTS} from '../../styles/fonts';
-import {clearSession, getTerndingMovieList} from '../../services/api';
+import {
+  clearSession,
+  getMoviesListByType,
+  getTerndingMovieList,
+} from '../../services/api';
 import {SEARCH_TYPE} from '../../utils/data';
 import {useSelector, useDispatch} from 'react-redux';
 import {
@@ -24,20 +28,28 @@ import {
 import {HOME_MOVIE_BG_URL} from '../../utils/url';
 import TextLabel from '../../components/TextLabel';
 import {
+  COMMON_ERROR_MSG,
   HOME_TAB_SUBTITLE,
+  NOW_PLAYING,
+  POPULAR,
   SEARCH,
   SEARCH_MOVIES,
   TRENDING,
+  UPCOMING,
   WELCOME,
 } from '../../utils/strings';
 import PropTypes from 'prop-types';
 import CardMoview from '../../components/CardMoview';
 import {logout} from '../../reduxStore/slice/UserSlice';
-import {showToast} from '../../utils/utility';
-import assets from '../../assets/images';
+import {isEmpty, showToast} from '../../utils/utility';
+import imageAssets from '../../assets/images';
 
 const HomeTab = ({navigation}) => {
   const [trendingMovieList, setTrendingMovieList] = useState([]);
+  const [popularMovieList, setPopularMovieList] = useState([]);
+  const [upcomingMovieList, setUpcomingMovieList] = useState([]);
+  const [nowPlayingMovieList, setNowPlayingMovieList] = useState([]);
+
   const [text, onChangeText] = useState('');
   const [welcomeName, setWelcomeName] = useState('');
 
@@ -53,8 +65,19 @@ const HomeTab = ({navigation}) => {
   const init = async () => {
     const name = userName ? `${WELCOME} ${userName}` : '${WELCOME}';
     setWelcomeName(name);
-    const response = await getTerndingMovieList();
-    setTrendingMovieList(response);
+    try {
+      const trendingResponse = await getTerndingMovieList();
+      setTrendingMovieList(trendingResponse);
+      const popularResponse = await getMoviesListByType('popular');
+      setPopularMovieList(popularResponse);
+      const nowPlayingResponse = await getMoviesListByType('now_playing');
+      setNowPlayingMovieList(nowPlayingResponse);
+      const upcomingResponse = await getMoviesListByType('upcoming');
+      setUpcomingMovieList(upcomingResponse);
+    } catch (e) {
+      showToast('error', '', COMMON_ERROR_MSG);
+      console.log('[LogiHomeTabnScreen] >>> [init] [error]: ', e);
+    }
   };
 
   const renderItem = ({item, index}) => {
@@ -82,10 +105,12 @@ const HomeTab = ({navigation}) => {
 
   const handleSearch = () => {
     console.log('[HomeTab] >>> [handleSearch]');
-    navigation.navigate(MOVIES_LIST_SCREEN, {
-      type: SEARCH_TYPE,
-      searchText: text,
-    });
+    if (!isEmpty(text)) {
+      navigation.navigate(MOVIES_LIST_SCREEN, {
+        type: SEARCH_TYPE,
+        searchText: text,
+      });
+    }
   };
 
   const onHandleLogout = async () => {
@@ -105,11 +130,11 @@ const HomeTab = ({navigation}) => {
       <ScrollView style={styles.scrollContainer}>
         {/* Header */}
         <View style={styles.mainHeader}>
-          <Image style={styles.logo} source={assets.tmdb} />
+          <Image style={styles.logo} source={imageAssets.tmdb} />
           <TouchableOpacity onPress={() => onHandleLogout()}>
             <Image
               style={styles.loginImg}
-              source={isUserLoggedIn ? assets.logout : assets.login}
+              source={isUserLoggedIn ? imageAssets.logout : imageAssets.login}
             />
           </TouchableOpacity>
         </View>
@@ -154,7 +179,10 @@ const HomeTab = ({navigation}) => {
                   placeholderTextColor={GREY_GHOST}
                 />
                 <TouchableOpacity onPress={handleClearSearch}>
-                  <Image style={styles.searchCloseIcon} source={assets.close} />
+                  <Image
+                    style={styles.searchCloseIcon}
+                    source={imageAssets.close}
+                  />
                 </TouchableOpacity>
               </View>
 
@@ -176,21 +204,65 @@ const HomeTab = ({navigation}) => {
         </ImageBackground>
 
         {/* Trending */}
-
-        <Text style={styles.mainHeading}>{TRENDING}</Text>
-
-        {/* List display */}
-
-        <FlatList
-          style={styles.flatlistContainer}
+        <MovieList
+          title={TRENDING}
           data={trendingMovieList}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
-          horizontal={true}
+        />
+
+        {/* Now playing */}
+        <MovieList
+          title={NOW_PLAYING}
+          data={nowPlayingMovieList}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+        />
+
+        {/* Upcoming */}
+        <MovieList
+          title={UPCOMING}
+          data={upcomingMovieList}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+        />
+
+        {/* Popular */}
+        <MovieList
+          title={POPULAR}
+          data={popularMovieList}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
         />
       </ScrollView>
     </SafeAreaView>
   );
+};
+
+const MovieList = ({
+  title,
+  data,
+  renderItem,
+  keyExtractor,
+}): React.JSX.Element => (
+  <View>
+    <Text style={styles.mainHeading}>{title}</Text>
+    {/* List display */}
+    <FlatList
+      style={styles.flatlistContainer}
+      data={data}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
+      horizontal={true}
+    />
+  </View>
+);
+
+MovieList.propTypes = {
+  title: PropTypes.string,
+  data: PropTypes.array,
+  renderItem: PropTypes.func,
+  keyExtractor: PropTypes.func,
 };
 
 const styles = StyleSheet.create({

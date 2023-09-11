@@ -1,12 +1,5 @@
 import axios from 'axios';
-import {
-  API_KEY,
-  TOKEN,
-  ACCEPT_APP_JSON,
-  METHOD_GET,
-  METHOD_POST,
-  METHOD_DELETE,
-} from '../utils/constants';
+import {API_KEY, TOKEN, ACCEPT_APP_JSON} from '../utils/constants';
 import {BASE_URL} from '../utils/url';
 
 export const getTerndingMovieList = async () => {
@@ -20,7 +13,30 @@ export const getTerndingMovieList = async () => {
     `${BASE_URL}/trending/all/day?language=en-US`,
     config,
   );
-  return response.data.results;
+  if (response.status < 400) {
+    return response.data.results;
+  } else {
+    return null;
+  }
+};
+
+export const getMoviesListByType = async (type: string) => {
+  const headers = getHeaders();
+
+  let config = {
+    headers,
+  };
+
+  const response = await axios.get(
+    `${BASE_URL}/movie/${type}?api_key=${API_KEY}&language=en-US&page=1`,
+    config,
+  );
+
+  if (response.status < 400) {
+    return response.data.results;
+  } else {
+    return [];
+  }
 };
 
 export const getSearchReultsList = async (searchText: any) => {
@@ -90,8 +106,8 @@ export const authenticateUser = async (
     headers,
   };
   const data = {
-    username: 'gvsrinivas', //'alekhyabairaboina', // TODO
-    password: 'srinivas@tmdb', //'varunbairaboina',
+    username, //'gvsrinivas', //'alekhyabairaboina',
+    password, // 'srinivas@tmdb', //'varunbairaboina',
     request_token: `${requestToken}`,
   };
   const response = await axios.post(
@@ -147,13 +163,17 @@ export const addToWatchList = async (
   }
 };
 
-export const addToFavourite = async (account_id: string) => {
+export const addToFavourite = async (
+  account_id: string,
+  movieId: string,
+  isFavorite: boolean,
+) => {
   const headers = getHeaders();
 
   let config = {
     headers,
   };
-  const data = {media_type: 'movie', media_id: 11, favorite: true};
+  const data = {media_type: 'movie', media_id: movieId, favorite: isFavorite};
 
   const response = await axios.post(
     `${BASE_URL}/account/${account_id}/favorite`,

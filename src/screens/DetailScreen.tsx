@@ -9,12 +9,19 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
-import {addToWatchList} from '../services/api';
+import {addToFavourite, addToWatchList} from '../services/api';
 import {MEDIUM_GREY} from '../styles/colors';
 import {FONTS} from '../styles/fonts';
 import {BASE_IMAGE_URL} from '../utils/constants';
-import {COMMON_ERROR_MSG} from '../utils/strings';
+import {
+  ADDED_TO_FAVOURITE_LIST,
+  ADDED_TO_WATCHLIST,
+  COMMON_ERROR_MSG,
+  REMOVED_FROM_FAVOURITE_LIST,
+  REMOVED_FROM_WATCHLIST,
+} from '../utils/strings';
 import {showToast} from '../utils/utility';
+import imageAssets from '../assets/images';
 
 const DetailScreen = ({route, navigation}) => {
   const [item, setItem] = useState({});
@@ -24,10 +31,7 @@ const DetailScreen = ({route, navigation}) => {
   const [overview, setOverview] = useState('');
   const [ratingInfo, setRatingInfo] = useState('');
   const [isItemWatchlist, setItemWatchlist] = useState(false);
-
-  const watchlistIcon = require('../assets/images/bookmark.png');
-  const removeFromWatchlist = require('../assets/images/unbookmark.png');
-  const backIcon = require('../assets/images/back.png');
+  const [isFavourite, setIsFavourite] = useState(false);
 
   const {accountId} = useSelector(state => state.user);
 
@@ -38,16 +42,21 @@ const DetailScreen = ({route, navigation}) => {
   const init = () => {
     console.log('[DetailScreen] >>> [init] route: ', route.params?.item);
     const item = route.params?.item;
+    const rating = item?.vote_average
+      ? parseFloat(item.vote_average).toFixed(1)
+      : '';
     setItem(item);
-    const rateinfo = item.vote_average ? item.vote_average / 10 : '';
-    const votesinfo = item.vote_count ? `${item.vote_count} (votes)` : '';
+    const rateinfo = item.vote_average ? rating : '';
+    const votesinfo = item.vote_count ? `(${item.vote_count} votes)` : '';
     setTitile(item.name || item.title);
     setBanner(item?.backdrop_path);
     setReleaseDate(`Release date: ${item.release_date || item.first_air_date}`);
     setOverview(item?.overview ?? '');
     setRatingInfo(`User score: ${rateinfo} ${votesinfo}`);
-    //make an api call to check if the item is in watchlist
+
+    //make an api call to check if the item is in watchlist/favourite
     setItemWatchlist(isItemWatchlist);
+    setIsFavourite(isFavourite);
     console.log('[DetailScreen] >>> [init] item: ', item);
   };
 
@@ -68,16 +77,43 @@ const DetailScreen = ({route, navigation}) => {
         showToast(
           'success',
           '',
-          isWatchList
-            ? 'Movie added to watchlist'
-            : 'Movie removed to watchlist',
+          isWatchList ? ADDED_TO_WATCHLIST : REMOVED_FROM_WATCHLIST,
         );
       } else {
         showToast('error', '', COMMON_ERROR_MSG);
       }
     } catch (e) {
       showToast('error', '', COMMON_ERROR_MSG);
-      console.log('[LoginScreen] >>> [onHandleLogout] [error]: ', e);
+      console.log('[DetailScreen] >>> [onHandleLogout] [error]: ', e);
+    }
+  };
+
+  const onPressFavourite = async () => {
+    console.log('[DetailScreen] >>> [onPressFavourite]', !isFavourite);
+    try {
+      //make an api call to add to watchlist
+      const movieId = item?.id ?? '';
+      const isFavouriteItem = !isFavourite;
+      const response = await addToFavourite(
+        accountId,
+        movieId,
+        isFavouriteItem,
+      );
+      if (response.success) {
+        setIsFavourite(isFavouriteItem);
+        showToast(
+          'success',
+          '',
+          isFavouriteItem
+            ? ADDED_TO_FAVOURITE_LIST
+            : REMOVED_FROM_FAVOURITE_LIST,
+        );
+      } else {
+        showToast('error', '', COMMON_ERROR_MSG);
+      }
+    } catch (e) {
+      showToast('error', '', COMMON_ERROR_MSG);
+      console.log('[DetailScreen] >>> [onHandleLogout] [error]: ', e);
     }
   };
 
@@ -89,19 +125,10 @@ const DetailScreen = ({route, navigation}) => {
           <View style={styles.header}>
             {/* Back button */}
             <TouchableOpacity onPress={() => onPressBack()}>
-              <Image style={styles.backButton} source={backIcon} />
+              <Image style={styles.backButton} source={imageAssets.back} />
             </TouchableOpacity>
 
             <Text style={styles.headingTitle}> {titile}</Text>
-
-            {/* WatchList button */}
-
-            <TouchableOpacity onPress={() => onPressWatchList()}>
-              <Image
-                style={styles.addWatchlist}
-                source={isItemWatchlist ? watchlistIcon : removeFromWatchlist}
-              />
-            </TouchableOpacity>
           </View>
 
           <View style={styles.mainContainer}>
@@ -110,6 +137,31 @@ const DetailScreen = ({route, navigation}) => {
               source={{uri: `${BASE_IMAGE_URL}${banner}`}}
             />
             <Text style={[styles.title, styles.spacing]}>{titile}</Text>
+
+            <View style={styles.iconRows}>
+              {/* WatchList button */}
+              <TouchableOpacity onPress={() => onPressWatchList()}>
+                <Image
+                  style={styles.userIcon}
+                  source={
+                    isItemWatchlist
+                      ? imageAssets.bookmark
+                      : imageAssets.unbookmark
+                  }
+                />
+              </TouchableOpacity>
+
+              {/* Favourite button */}
+              <TouchableOpacity onPress={() => onPressFavourite()}>
+                <Image
+                  style={styles.userIcon}
+                  source={
+                    isFavourite ? imageAssets.like : imageAssets.defaultLike
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.spacing} />
             <Text style={[styles.desc, styles.spacing]}>{releaseDate}</Text>
             <Text style={[styles.desc, styles.spacing]}>{ratingInfo}</Text>
             <Text style={[styles.desc, styles.spacing]}>{overview}</Text>
@@ -139,7 +191,7 @@ const styles = StyleSheet.create({
     height: 24,
     resizeMode: 'contain',
   },
-  addWatchlist: {
+  userIcon: {
     width: 32,
     height: 32,
     resizeMode: 'contain',
@@ -167,14 +219,14 @@ const styles = StyleSheet.create({
   desc: {
     fontFamily: FONTS.MontserratRegular,
     color: 'black',
-    fontSize: 14,
+    fontSize: 16,
   },
   spacing: {
     marginBottom: 12,
   },
+  iconRows: {
+    flexDirection: 'row',
+  },
 });
 
 export default DetailScreen;
-function addWatchlist() {
-  throw new Error('Function not implemented.');
-}

@@ -20,9 +20,18 @@ import {MEDIUM_GREY, BLUE} from '../styles/colors';
 import {FONTS} from '../styles/fonts';
 import {BASE_IMAGE_URL} from '../utils/constants';
 import {FAVOURITES_TYPE, RATINGS_TYPE, SEARCH_TYPE} from '../utils/data';
-import {MOVIE_SEARCH, MY_FAVOURITES, MY_RATINGS} from '../utils/strings';
+import {
+  COMMON_ERROR_MSG,
+  MOVIE_SEARCH,
+  MY_FAVOURITES,
+  MY_RATINGS,
+} from '../utils/strings';
+import imageAssets from '../assets/images';
+import {showToast} from '../utils/utility';
+import EmptyStateScreen from '../components/EmptyStateScreen';
 
 const MoviesListScreen = ({route, navigation}) => {
+  const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [searchCountInfo, setSearchCountInfo] = useState('');
   const [movieList, setMovieList] = useState([]);
@@ -30,8 +39,11 @@ const MoviesListScreen = ({route, navigation}) => {
   const {accountId} = useSelector(state => state.user);
 
   useEffect(() => {
-    init();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      init();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const init = async () => {
     const type = route.params?.type;
@@ -39,17 +51,33 @@ const MoviesListScreen = ({route, navigation}) => {
     let response = '';
     if (type === SEARCH_TYPE) {
       const searchText = route.params?.searchText;
-      response = await getSearchReultsList(searchText);
-      setTitle(MOVIE_SEARCH);
-      setSearchCountInfo(`${response.length} movies with "${searchText}"`);
+      try {
+        response = await getSearchReultsList(searchText);
+        setTitle(MOVIE_SEARCH);
+        setSearchCountInfo(`${response.length} movies with "${searchText}"`);
+      } catch (e) {
+        showToast('error', '', COMMON_ERROR_MSG);
+        console.log('[LoginScreen] >>> [init] [error]: ', e);
+      }
     } else if (type === FAVOURITES_TYPE) {
-      response = await getFavoriteMovies(accountId);
-      setTitle(MY_FAVOURITES);
+      try {
+        response = await getFavoriteMovies(accountId);
+        setTitle(MY_FAVOURITES);
+      } catch (e) {
+        showToast('error', '', COMMON_ERROR_MSG);
+        console.log('[LoginScreen] >>> [init] [error]: ', e);
+      }
     } else if (type === RATINGS_TYPE) {
-      response = await getRatedMovies(accountId);
-      setTitle(MY_RATINGS);
+      try {
+        response = await getRatedMovies(accountId);
+        setTitle(MY_RATINGS);
+      } catch (e) {
+        showToast('error', '', COMMON_ERROR_MSG);
+        console.log('[LoginScreen] >>> [init] [error]: ', e);
+      }
     }
     setMovieList(response);
+    setLoading(false);
   };
 
   const onPressBack = () => {
@@ -99,10 +127,7 @@ const MoviesListScreen = ({route, navigation}) => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => onPressBack()}>
-            <Image
-              style={styles.backButton}
-              source={require('../assets/images/back.png')}
-            />
+            <Image style={styles.backButton} source={imageAssets.back} />
           </TouchableOpacity>
           <Text style={styles.headingTitle}>{title}</Text>
         </View>
@@ -116,13 +141,16 @@ const MoviesListScreen = ({route, navigation}) => {
         />
 
         <View style={styles.mainContainer}>
-          {/* List display */}
-          <FlatList
-            style={styles.flatlistContainer}
-            data={movieList}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-          />
+          {!loading && movieList.length <= 0 ? (
+            <EmptyStateScreen />
+          ) : (
+            <FlatList
+              style={styles.flatlistContainer}
+              data={movieList}
+              renderItem={renderItem}
+              keyExtractor={keyExtractor}
+            />
+          )}
         </View>
       </View>
     </SafeAreaView>

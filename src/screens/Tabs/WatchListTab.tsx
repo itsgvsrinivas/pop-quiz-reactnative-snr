@@ -9,26 +9,40 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useSelector} from 'react-redux';
+import EmptyStateScreen from '../../components/EmptyStateScreen';
 import {DETAILS_SCREEN} from '../../navigation/NavigationConstant';
 import {getWatchListMovies} from '../../services/api';
 import {MEDIUM_GREY, BLUE} from '../../styles/colors';
 import {FONTS} from '../../styles/fonts';
 import {BASE_IMAGE_URL} from '../../utils/constants';
+import {COMMON_ERROR_MSG} from '../../utils/strings';
+import {showToast} from '../../utils/utility';
 
 const WatchListTab = ({route, navigation}) => {
+  const [loading, setLoading] = useState(true);
   const [movieList, setMovieList] = useState([]);
 
   const accountId = useSelector(state => state.user.accountId);
 
   useEffect(() => {
-    init();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      init();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const init = async () => {
     console.log('[WatchListTab] >>> [init]');
     //Make an api call to get the watchlist
-    const response = await getWatchListMovies(accountId);
-    setMovieList(response);
+    try {
+      const response = await getWatchListMovies(accountId);
+      setMovieList(response);
+      setLoading(false);
+    } catch (e) {
+      showToast('error', '', COMMON_ERROR_MSG);
+      setLoading(false);
+      console.log('[WatchListTab] >>> [init] [error]: ', e);
+    }
   };
 
   const renderItem = ({item, index}) => {
@@ -63,7 +77,7 @@ const WatchListTab = ({route, navigation}) => {
   };
 
   const onItemPress = item => {
-    console.log('[Dashboard] >>> [onItemPress]', item);
+    console.log('[WatchListTab] >>> [onItemPress]', item);
     navigation.navigate(DETAILS_SCREEN, {item});
   };
 
@@ -77,12 +91,16 @@ const WatchListTab = ({route, navigation}) => {
 
         <View style={styles.mainContainer}>
           {/* List display */}
-          <FlatList
-            style={styles.flatlistContainer}
-            data={movieList}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-          />
+          {!loading && movieList.length <= 0 ? (
+            <EmptyStateScreen />
+          ) : (
+            <FlatList
+              style={styles.flatlistContainer}
+              data={movieList}
+              renderItem={renderItem}
+              keyExtractor={keyExtractor}
+            />
+          )}
         </View>
       </View>
     </SafeAreaView>
