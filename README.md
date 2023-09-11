@@ -151,7 +151,7 @@ Android Build APK can be found at: `https://install.appcenter.ms/users/itsgvsrin
 
 ### My rated movie Screen
 
-<img src="screenshots/tmdb_ratings.png" width="240">
+<img src="screenshots/tmdb_ratings.png" width="360">
 
 ### User Profile screen
 
