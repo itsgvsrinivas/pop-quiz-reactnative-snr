@@ -11,58 +11,59 @@ import {
   TextInput,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {BLUE, MEDIUM_GREY, GREY_GHOST} from '../../styles/colors';
+import {BLUE, MEDIUM_GREY, GREY_GHOST, WHITE} from '../../styles/colors';
 import {FONTS} from '../../styles/fonts';
-import {getTerndingMovieList} from '../../services/api';
-import {BASE_IMAGE_URL} from '../../utils/constants';
+import {clearSession, getTerndingMovieList} from '../../services/api';
 import {SEARCH_TYPE} from '../../utils/data';
 import {useSelector, useDispatch} from 'react-redux';
+import {
+  DETAILS_SCREEN,
+  LOGIN_SCREEN,
+  MOVIES_LIST_SCREEN,
+} from '../../navigation/NavigationConstant';
+import {HOME_MOVIE_BG_URL} from '../../utils/url';
+import TextLabel from '../../components/TextLabel';
+import {
+  HOME_TAB_SUBTITLE,
+  SEARCH,
+  SEARCH_MOVIES,
+  TRENDING,
+  WELCOME,
+} from '../../utils/strings';
+import PropTypes from 'prop-types';
+import CardMoview from '../../components/CardMoview';
 import {logout} from '../../reduxStore/slice/UserSlice';
+import {showToast} from '../../utils/utility';
+import assets from '../../assets/images';
 
 const HomeTab = ({navigation}) => {
-  const [movieList, setMovieList] = useState([]);
-  const [pageNo, setPageNo] = useState(1);
-  const [text, onChangeText] = React.useState('');
+  const [trendingMovieList, setTrendingMovieList] = useState([]);
+  const [text, onChangeText] = useState('');
+  const [welcomeName, setWelcomeName] = useState('');
 
   const dispatch = useDispatch();
-  const userName = useSelector(state => state.user.userName);
-  const user = useSelector(state => state.user);
-  console.log('[HomeTab] >>> [init] user:', user);
+  const {userName, sessionId} = useSelector(state => state.user);
 
   const isUserLoggedIn = userName === '' ? false : true;
-
-  const loginImg = require('../../assets/images/login.png');
-  const logoutImg = require('../../assets/images/logout.png');
 
   useEffect(() => {
     init();
   }, []);
 
   const init = async () => {
-    console.log('[HomeTab] >>> [init] isUserLoggedIn:', isUserLoggedIn);
-    console.log('[HomeTab] >>> [init] userName:', userName);
+    const name = userName ? `${WELCOME} ${userName}` : '${WELCOME}';
+    setWelcomeName(name);
     const response = await getTerndingMovieList();
-    const data = movieList ? [...movieList, ...response] : response;
-    setMovieList(data);
+    setTrendingMovieList(response);
   };
 
   const renderItem = ({item, index}) => {
-    return (
-      <TouchableOpacity
-        onPress={() => onItemPress(item, index)}
-        style={styles.mainItemContainer}>
-        <View style={styles.itemContainer}>
-          <Image
-            style={styles.img}
-            source={{uri: `${BASE_IMAGE_URL}${item.poster_path}`}}
-          />
-          <Text style={styles.itemTitle}>{item.name || item.title}</Text>
-          <Text style={styles.itemYear}>
-            {item.release_date || item.first_air_date}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
+    return <CardMoview item={item} onPress={onItemPress} index={index} />;
+  };
+
+  renderItem.propTypes = {
+    item: PropTypes.object,
+    index: PropTypes.number,
   };
 
   const keyExtractor = (item, index) => {
@@ -70,9 +71,8 @@ const HomeTab = ({navigation}) => {
   };
 
   const onItemPress = item => {
-    console.log('[HomeTab] >>> [onItemPress]', item);
-    navigation.navigate('DetailScreen', {item});
-    //navigation.navigate('HomeStack', {screen: 'DetailScreen'});
+    console.log('[HomeTab] >>> [onItemPress]', item.item);
+    navigation.navigate(DETAILS_SCREEN, {item});
   };
 
   const handleClearSearch = () => {
@@ -82,47 +82,63 @@ const HomeTab = ({navigation}) => {
 
   const handleSearch = () => {
     console.log('[HomeTab] >>> [handleSearch]');
-    //make an api call to get search result
-    //navigation.navigate('MoviesListScreen', {item: text});
-    navigation.navigate('MoviesListScreen', {
+    navigation.navigate(MOVIES_LIST_SCREEN, {
       type: SEARCH_TYPE,
-      searchText: 'Villan',
+      searchText: text,
     });
   };
 
-  const onHandleLogout = () => {
-    console.log('[DetailScreen] >>> [onHandleLogin11]');
+  const onHandleLogout = async () => {
+    console.log('[HomeTab] >>> [onHandleLogout]');
+    try {
+      await clearSession(sessionId);
+    } catch (e) {
+      console.log('[HomeTab] >>> [onHandleLogout] [error]: ', e);
+    }
+    showToast('success', 'Logout', 'You have logged out.');
     dispatch(logout());
-    console.log('[HomeTab] >>> [onHandleLogout] user:', user);
-    navigation.navigate('LoginScreen');
+    navigation.navigate(LOGIN_SCREEN);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
+        {/* Header */}
         <View style={styles.mainHeader}>
-          <Image
-            style={styles.logo}
-            source={require('../../assets/images/tmdb.png')}
-          />
+          <Image style={styles.logo} source={assets.tmdb} />
           <TouchableOpacity onPress={() => onHandleLogout()}>
             <Image
               style={styles.loginImg}
-              source={isUserLoggedIn ? loginImg : logoutImg}
+              source={isUserLoggedIn ? assets.logout : assets.login}
             />
           </TouchableOpacity>
         </View>
 
+        {/* BG and welcome text */}
         <ImageBackground
           source={{
-            uri: 'https://www.themoviedb.org/t/p/w880_and_h600_multi_faces_filter(duotone,00192f,00baff)/tfw5LKySp7uEYJ3CUuD4TKx3s8y.jpg',
+            uri: HOME_MOVIE_BG_URL,
           }}
           style={styles.headerImage}>
           <View style={styles.header}>
-            <Text style={styles.welcomeTitle}>Welcome.</Text>
-            <Text style={styles.welcomeSubTitle}>
-              Millions of movies, TV shows and people to discover. Explore now.
-            </Text>
+            <TextLabel
+              fontSize={28}
+              fontWeight="700"
+              textAlign="left"
+              color={WHITE}
+              text={welcomeName}
+              style={styles.welcomeTitle}
+            />
+
+            <TextLabel
+              fontSize={20}
+              lineHeight={24}
+              fontWeight="600"
+              textAlign="left"
+              color={WHITE}
+              text={HOME_TAB_SUBTITLE}
+              style={styles.welcomeSubTitle}
+            />
 
             {/* Search */}
             <View style={styles.searchContainer}>
@@ -134,35 +150,40 @@ const HomeTab = ({navigation}) => {
                     onChangeText(text);
                   }}
                   value={text}
-                  placeholder="Search movies"
+                  placeholder={SEARCH_MOVIES}
                   placeholderTextColor={GREY_GHOST}
                 />
-                <TouchableOpacity
-                  onPress={handleClearSearch}
-                  style={styles.searchInputCloseBtn}>
-                  <Image
-                    style={styles.searchCloseIcon}
-                    source={require('../../assets/images/close.png')}
-                  />
+                <TouchableOpacity onPress={handleClearSearch}>
+                  <Image style={styles.searchCloseIcon} source={assets.close} />
                 </TouchableOpacity>
               </View>
 
               <TouchableOpacity
                 onPress={handleSearch}
                 style={styles.searchBtnContainer}>
-                <Text style={styles.searchBtnText}>Search</Text>
+                <TextLabel
+                  fontSize={16}
+                  lineHeight={24}
+                  fontWeight="400"
+                  textAlign="left"
+                  color={WHITE}
+                  text={SEARCH}
+                  style={styles.searchBtnText}
+                />
               </TouchableOpacity>
             </View>
           </View>
         </ImageBackground>
 
-        <Text style={styles.mainHeading}>Trending</Text>
+        {/* Trending */}
+
+        <Text style={styles.mainHeading}>{TRENDING}</Text>
 
         {/* List display */}
 
         <FlatList
           style={styles.flatlistContainer}
-          data={movieList}
+          data={trendingMovieList}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           horizontal={true}
@@ -195,8 +216,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loginImg: {
-    width: 28,
-    height: 28,
+    width: 36,
+    height: 36,
     resizeMode: 'contain',
     marginRight: 8,
   },
@@ -256,23 +277,15 @@ const styles = StyleSheet.create({
   },
 
   welcomeTitle: {
-    fontSize: 36,
-    fontFamily: FONTS.MontserratBold,
-    color: 'white',
-    textAlign: 'left',
     padding: 8,
   },
 
   welcomeSubTitle: {
-    fontSize: 24,
-    fontFamily: FONTS.MontserratSemiBold,
-    color: 'white',
-    textAlign: 'left',
     padding: 8,
   },
 
   flatlistContainer: {
-    height: 320,
+    height: 340,
     padding: 4,
     width: '100%',
   },
@@ -296,7 +309,7 @@ const styles = StyleSheet.create({
 
   searchContainer: {
     flex: 1,
-    marginTop: 18,
+    marginTop: 20,
     marginBottom: 8,
     marginHorizontal: 8,
     height: 50,
@@ -309,9 +322,9 @@ const styles = StyleSheet.create({
     width: '76%',
     height: '100%',
     borderColor: 'white',
-    borderWidth: 2,
+    borderWidth: 1,
     paddingLeft: 4,
-    borderRadius: 12,
+    borderRadius: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -332,9 +345,6 @@ const styles = StyleSheet.create({
   },
 
   searchBtnText: {
-    fontSize: 18,
-    fontFamily: FONTS.MontserratMedium,
-    color: 'white',
     alignSelf: 'center',
   },
 });

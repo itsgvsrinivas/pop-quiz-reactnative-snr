@@ -1,34 +1,40 @@
 import React from 'react';
+import {Text, View} from 'react-native';
+import {FONTS} from '../styles/fonts';
 import PropTypes from 'prop-types';
-import {
-  View,
-  Image,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-} from 'react-native';
 
-const AvatarCircle = ({onPress, source}) => {
+const AvatarCircle = ({name}) => {
+  const firstChar = name.substring(0, 1).toUpperCase();
   return (
-    <TouchableWithoutFeedback style={styles.avatarLayout} onPress={onPress}>
-      <Image style={styles.avatar} source={source} />
-    </TouchableWithoutFeedback>
+    <View style={styles.avatarLayout}>
+      <Text style={styles.logoTitle}>{firstChar}</Text>
+    </View>
   );
 };
 
 const styles = {
   avatarLayout: {
-    width: 80,
-    height: 80,
-    flexDirection: 'column',
+    width: 100,
+    height: 100,
     borderRadius: 100 / 2,
-    backgroundColor: 'red',
-    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'black',
+    borderStyle: 'solid',
     justifyContent: 'center',
+    backgroundColor: 'pink',
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 80 / 2,
+  logoTitle: {
+    fontSize: 36,
+    fontFamily: FONTS.MontserratBold,
+    textAlign: 'center',
   },
+};
+
+AvatarCircle.propTypes = {
+  name: PropTypes.string,
+};
+
+AvatarCircle.defaultProps = {
+  name: '',
 };
 export {AvatarCircle};

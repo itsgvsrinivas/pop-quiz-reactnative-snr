@@ -1,8 +1,8 @@
 export const FONTS = {
-  MontserratBold: 'Montserrat-Bold',
-  MontserratRegular: 'Montserrat-Regular',
-  Montserratlight: 'Montserrat-Light',
   MontserratThinItalic: 'Montserrat-ThinItalic',
-  MontserratSemiBold: 'Montserrat-SemiBold',
+  Montserratlight: 'Montserrat-Light',
+  MontserratRegular: 'Montserrat-Regular',
   MontserratMedium: 'Montserrat-Medium',
+  MontserratSemiBold: 'Montserrat-SemiBold',
+  MontserratBold: 'Montserrat-Bold',
 };

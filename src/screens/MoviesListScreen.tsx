@@ -8,6 +8,9 @@ import {
   FlatList,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useSelector} from 'react-redux';
+import TextLabel from '../components/TextLabel';
+import {DETAILS_SCREEN} from '../navigation/NavigationConstant';
 import {
   getFavoriteMovies,
   getRatedMovies,
@@ -17,36 +20,41 @@ import {MEDIUM_GREY, BLUE} from '../styles/colors';
 import {FONTS} from '../styles/fonts';
 import {BASE_IMAGE_URL} from '../utils/constants';
 import {FAVOURITES_TYPE, RATINGS_TYPE, SEARCH_TYPE} from '../utils/data';
+import {MOVIE_SEARCH, MY_FAVOURITES, MY_RATINGS} from '../utils/strings';
 
 const MoviesListScreen = ({route, navigation}) => {
+  const [title, setTitle] = useState('');
   const [searchCountInfo, setSearchCountInfo] = useState('');
   const [movieList, setMovieList] = useState([]);
+
+  const {accountId} = useSelector(state => state.user);
 
   useEffect(() => {
     init();
   }, []);
 
   const init = async () => {
-    console.log('[MoviesListScreen] >>> [init] route: ', route.params?.item);
     const type = route.params?.type;
+    console.log('[MoviesListScreen] >>> [init] route: ', type);
     let response = '';
     if (type === SEARCH_TYPE) {
       const searchText = route.params?.searchText;
       response = await getSearchReultsList(searchText);
+      setTitle(MOVIE_SEARCH);
       setSearchCountInfo(`${response.length} movies with "${searchText}"`);
     } else if (type === FAVOURITES_TYPE) {
-      const accountId = '';
       response = await getFavoriteMovies(accountId);
+      setTitle(MY_FAVOURITES);
     } else if (type === RATINGS_TYPE) {
-      const accountId = '';
       response = await getRatedMovies(accountId);
+      setTitle(MY_RATINGS);
     }
     setMovieList(response);
   };
 
   const onPressBack = () => {
     navigation.goBack();
-    console.log(`[MoviesListScreen] >>> [onPressBack`);
+    console.log('[MoviesListScreen] >>> [onPressBack');
   };
 
   const renderItem = ({item, index}) => {
@@ -76,14 +84,13 @@ const MoviesListScreen = ({route, navigation}) => {
     );
   };
 
-  const keyExtractor = (item, index) => {
+  const keyExtractor = (item: {id: number}, index: any) => {
     return `${item.id}${index}`;
   };
 
-  const onItemPress = item => {
+  const onItemPress = (item: object) => {
     console.log('[Dashboard] >>> [onItemPress]', item);
-    navigation.navigate('DetailScreen', {item});
-    //navigation.navigate('HomeStack', {screen: 'DetailScreen'});
+    navigation.navigate(DETAILS_SCREEN, {item});
   };
 
   return (
@@ -97,10 +104,16 @@ const MoviesListScreen = ({route, navigation}) => {
               source={require('../assets/images/back.png')}
             />
           </TouchableOpacity>
-          <Text style={styles.headingTitle}>Movie Search</Text>
+          <Text style={styles.headingTitle}>{title}</Text>
         </View>
 
-        <Text style={styles.subHeadingTitle}>{searchCountInfo}</Text>
+        <TextLabel
+          fontSize={16}
+          lineHeight={23}
+          fontWeight="500"
+          textAlign="left"
+          text={searchCountInfo}
+        />
 
         <View style={styles.mainContainer}>
           {/* List display */}

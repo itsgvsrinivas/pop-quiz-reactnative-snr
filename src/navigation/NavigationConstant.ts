@@ -1,4 +1,4 @@
-export const TAB = 'Tab';
+export const TAB = 'Tabs';
 export const HOME_TAB = 'HomeTab';
 export const PROFILE_TAB = 'ProfileTab';
 export const WATCH_LIST_TAB = 'WatchListTab';

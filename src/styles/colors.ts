@@ -1,6 +1,13 @@
+export const GREY = '#cfcfcf';
+export const LIGHT_GREY = '#eaeaea';
+export const GREY_GHOST = '#C7C7CD';
 export const MEDIUM_GREY = '#efeff3';
+export const DARK_GREY = '#4a4a4a';
 export const YELLOW = '#FFC600';
 export const LIGHT_YELLOW = '#FFECA9';
 export const BLUE = '#2892e9';
-export const GREY_GHOST = '#C7C7CD';
+export const BLUE_BRIGHT = '#01b4e4';
+export const BLUE_BERLIN = '#032541';
+export const BLACK = '#000000';
+export const WHITE = '#FFFFFF';
 export const SHADOW_LIGHT = 'rgba(0, 0, 0, 0.08)';

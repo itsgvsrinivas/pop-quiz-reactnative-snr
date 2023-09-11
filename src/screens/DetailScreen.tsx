@@ -8,16 +8,28 @@ import {
   ScrollView,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useSelector} from 'react-redux';
+import {addToWatchList} from '../services/api';
 import {MEDIUM_GREY} from '../styles/colors';
 import {FONTS} from '../styles/fonts';
 import {BASE_IMAGE_URL} from '../utils/constants';
+import {COMMON_ERROR_MSG} from '../utils/strings';
+import {showToast} from '../utils/utility';
 
 const DetailScreen = ({route, navigation}) => {
-  const [item, setItem] = useState('');
+  const [item, setItem] = useState({});
+  const [titile, setTitile] = useState('');
+  const [banner, setBanner] = useState('');
+  const [releaseDate, setReleaseDate] = useState('');
+  const [overview, setOverview] = useState('');
+  const [ratingInfo, setRatingInfo] = useState('');
   const [isItemWatchlist, setItemWatchlist] = useState(false);
 
-  const addWatchlist = require('../assets/images/bookmark.png');
+  const watchlistIcon = require('../assets/images/bookmark.png');
   const removeFromWatchlist = require('../assets/images/unbookmark.png');
+  const backIcon = require('../assets/images/back.png');
+
+  const {accountId} = useSelector(state => state.user);
 
   useEffect(() => {
     init();
@@ -27,6 +39,13 @@ const DetailScreen = ({route, navigation}) => {
     console.log('[DetailScreen] >>> [init] route: ', route.params?.item);
     const item = route.params?.item;
     setItem(item);
+    const rateinfo = item.vote_average ? item.vote_average / 10 : '';
+    const votesinfo = item.vote_count ? `${item.vote_count} (votes)` : '';
+    setTitile(item.name || item.title);
+    setBanner(item?.backdrop_path);
+    setReleaseDate(`Release date: ${item.release_date || item.first_air_date}`);
+    setOverview(item?.overview ?? '');
+    setRatingInfo(`User score: ${rateinfo} ${votesinfo}`);
     //make an api call to check if the item is in watchlist
     setItemWatchlist(isItemWatchlist);
     console.log('[DetailScreen] >>> [init] item: ', item);
@@ -35,26 +54,31 @@ const DetailScreen = ({route, navigation}) => {
   const onPressBack = () => {
     console.log('[DetailScreen] >>> [onPressBack]');
     navigation.canGoBack() && navigation.goBack();
-    //navigation.navigate('DetailScreen', {item});
-    //navigation.navigate('HomeStack', {screen: 'Dashboard'});
-    /*  navigation.navigate('HomeStack', {
-      screen: 'Dashboard',
-      params: {
-        service: 'myservice',
-        from: 'myfrom',
-      },
-      initial: false,
-    }); */
-
-    /*     navigation.navigate('HomeStack', {
-      screen: 'Dashboard',
-    }); */
   };
 
-  const onPressLike = () => {
-    console.log('[DetailScreen] >>> [onPressLike]', !isItemWatchlist);
-    setItemWatchlist(!isItemWatchlist);
-    //make an api call to add to watchlist
+  const onPressWatchList = async () => {
+    console.log('[DetailScreen] >>> [onPressWatchList]', !isItemWatchlist);
+    try {
+      //make an api call to add to watchlist
+      const movieId = item?.id ?? '';
+      const isWatchList = !isItemWatchlist;
+      const response = await addToWatchList(accountId, movieId, isWatchList);
+      if (response.success) {
+        setItemWatchlist(isWatchList);
+        showToast(
+          'success',
+          '',
+          isWatchList
+            ? 'Movie added to watchlist'
+            : 'Movie removed to watchlist',
+        );
+      } else {
+        showToast('error', '', COMMON_ERROR_MSG);
+      }
+    } catch (e) {
+      showToast('error', '', COMMON_ERROR_MSG);
+      console.log('[LoginScreen] >>> [onHandleLogout] [error]: ', e);
+    }
   };
 
   return (
@@ -63,19 +87,19 @@ const DetailScreen = ({route, navigation}) => {
         <View>
           {/* Header */}
           <View style={styles.header}>
+            {/* Back button */}
             <TouchableOpacity onPress={() => onPressBack()}>
-              <Image
-                style={styles.backButton}
-                source={require('../assets/images/back.png')}
-              />
+              <Image style={styles.backButton} source={backIcon} />
             </TouchableOpacity>
 
-            <Text style={styles.headingTitle}> {item.name || item.title}</Text>
+            <Text style={styles.headingTitle}> {titile}</Text>
 
-            <TouchableOpacity onPress={() => onPressLike()}>
+            {/* WatchList button */}
+
+            <TouchableOpacity onPress={() => onPressWatchList()}>
               <Image
                 style={styles.addWatchlist}
-                source={isItemWatchlist ? addWatchlist : removeFromWatchlist}
+                source={isItemWatchlist ? watchlistIcon : removeFromWatchlist}
               />
             </TouchableOpacity>
           </View>
@@ -83,22 +107,12 @@ const DetailScreen = ({route, navigation}) => {
           <View style={styles.mainContainer}>
             <Image
               style={[styles.img, styles.spacing]}
-              source={{uri: `${BASE_IMAGE_URL}${item?.backdrop_path}`}}
+              source={{uri: `${BASE_IMAGE_URL}${banner}`}}
             />
-            <Text style={[styles.title, styles.spacing]}>
-              {' '}
-              {item.name || item.title}
-            </Text>
-
-            <Text style={[styles.desc, styles.spacing]}>{`Release date: ${
-              item.release_date || item.first_air_date
-            }`}</Text>
-            <Text
-              style={[
-                styles.desc,
-                styles.spacing,
-              ]}>{`User score: ${item.vote_average}/10 (${item.vote_count} votes)`}</Text>
-            <Text style={[styles.desc, styles.spacing]}>{item?.overview}</Text>
+            <Text style={[styles.title, styles.spacing]}>{titile}</Text>
+            <Text style={[styles.desc, styles.spacing]}>{releaseDate}</Text>
+            <Text style={[styles.desc, styles.spacing]}>{ratingInfo}</Text>
+            <Text style={[styles.desc, styles.spacing]}>{overview}</Text>
           </View>
         </View>
       </ScrollView>
@@ -129,7 +143,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     resizeMode: 'contain',
-    marginRight: 8,
+    marginRight: 16,
   },
   headingTitle: {
     fontSize: 20,
@@ -138,7 +152,6 @@ const styles = StyleSheet.create({
     width: '84%',
     textAlign: 'center',
   },
-
   mainContainer: {
     marginVertical: 8,
   },
@@ -162,3 +175,6 @@ const styles = StyleSheet.create({
 });
 
 export default DetailScreen;
+function addWatchlist() {
+  throw new Error('Function not implemented.');
+}

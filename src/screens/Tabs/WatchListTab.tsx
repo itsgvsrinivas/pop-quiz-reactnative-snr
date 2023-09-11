@@ -8,31 +8,27 @@ import {
   FlatList,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {getSearchReultsList} from '../../services/api';
+import {useSelector} from 'react-redux';
+import {DETAILS_SCREEN} from '../../navigation/NavigationConstant';
+import {getWatchListMovies} from '../../services/api';
 import {MEDIUM_GREY, BLUE} from '../../styles/colors';
 import {FONTS} from '../../styles/fonts';
 import {BASE_IMAGE_URL} from '../../utils/constants';
 
 const WatchListTab = ({route, navigation}) => {
-  const [searchCountInfo, setSearchCountInfo] = useState('');
   const [movieList, setMovieList] = useState([]);
+
+  const accountId = useSelector(state => state.user.accountId);
 
   useEffect(() => {
     init();
   }, []);
 
   const init = async () => {
-    console.log('[WatchListTab] >>> [init] route: ', route.params?.item);
+    console.log('[WatchListTab] >>> [init]');
     //Make an api call to get the watchlist
-    const item = route.params?.item ?? 'villan';
-    const response = await getSearchReultsList(item);
+    const response = await getWatchListMovies(accountId);
     setMovieList(response);
-    setSearchCountInfo(`${response.length} movies with "${item}"`);
-  };
-
-  const onPressBack = () => {
-    navigation.goBack();
-    console.log(`[WatchListTab] >>> [onPressBack`);
   };
 
   const renderItem = ({item, index}) => {
@@ -68,8 +64,7 @@ const WatchListTab = ({route, navigation}) => {
 
   const onItemPress = item => {
     console.log('[Dashboard] >>> [onItemPress]', item);
-    navigation.navigate('DetailScreen', {item});
-    //navigation.navigate('HomeStack', {screen: 'DetailScreen'});
+    navigation.navigate(DETAILS_SCREEN, {item});
   };
 
   return (

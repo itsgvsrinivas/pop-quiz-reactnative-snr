@@ -1,6 +1,8 @@
+/* eslint-disable react/no-unstable-nested-components */
+/* eslint-disable react/react-in-jsx-scope */
 import ProfileTab from '../screens/Tabs/ProfileTab';
 import WatchListTab from '../screens/Tabs/WatchListTab';
-import Dashboard from '../screens/Tabs/HomeTab';
+import HomeTab from '../screens/Tabs/HomeTab';
 
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Feather from 'react-native-vector-icons/Feather';
@@ -11,10 +13,10 @@ function DasboardTabs() {
   return (
     <Tab.Navigator
       screenOptions={{headerShown: false}}
-      initialRouteName="Dashboard">
+      initialRouteName="HomeTab">
       <Tab.Screen
-        name="Dashboard"
-        component={Dashboard}
+        name="Home"
+        component={HomeTab}
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({color, size}) => (

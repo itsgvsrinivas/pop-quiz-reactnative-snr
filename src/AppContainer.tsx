@@ -6,19 +6,9 @@ import DetailScreen from './screens/DetailScreen';
 import MoviesListScreen from './screens/MoviesListScreen';
 import LoginScreen from './screens/LoginScreen';
 import DasboardTabs from './navigation/DasboardTabs';
+import { Toast } from 'react-native-toast-message/lib/src/Toast';
 
 const Stack = createNativeStackNavigator();
-
-//cleanup
-/* function Tabs() {
-  return (
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={Dashboard} />
-      <Tab.Screen name="WatchList" component={WatchList} />
-      <Tab.Screen name="Profile" component={Profile} />
-    </Tab.Navigator>
-  );
-} */
 
 const AppContainer = () => {
   return (
@@ -35,6 +25,7 @@ const AppContainer = () => {
         <Stack.Screen name="DetailScreen" component={DetailScreen} />
         <Stack.Screen name="MoviesListScreen" component={MoviesListScreen} />
       </Stack.Navigator>
+      <Toast />
     </NavigationContainer>
   );
 };
