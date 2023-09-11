@@ -115,3 +115,46 @@ Android Build APK can be found at: `https://install.appcenter.ms/users/itsgvsrin
 - Added utility and constant files for strings, url, assets, util functions and custom fonts
 - Axios library for asynchronous HTTP requests.
 - Added basic validations and check for network connection
+
+
+## Screenshots
+
+<div align='center'>
+
+### Home Screen
+
+<img src="screenshots/tmdb_dasboard_home.png" width="360">
+
+### Home Screen Upcoming and Now playing
+
+<img src="screenshots/tmdb_dasboard_now_upcoming.png" width="360">
+
+### Login screen
+
+<img src="screenshots/tmdb_login.png" width="360">
+
+### Movie Details Screen
+
+<img src="screenshots/tmdb_movie_details.png" width="360">
+
+### Movie watchlist Screen
+
+<img src="screenshots/tmdb_watchlist.png" width="360">
+
+### Search results
+
+<img src="screenshots/tmdb_search.png" width="360">
+
+### My favourites movie Screen
+
+<img src="screenshots/tmdb_favourites.png" width="360">
+
+### My rated movie Screen
+
+<img src="screenshots/tmdb_ratings.png" width="240">
+
+### User Profile screen
+
+<img src="screenshots/tmdb_profile.png" width="360">
+
+</div>
