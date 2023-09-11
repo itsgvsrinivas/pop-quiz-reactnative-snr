@@ -59,3 +59,59 @@ Please include a README file with a quick description of your solution.
 ### Submission
 
 - Email your work to careers@regovtech.com & techchallenge@regovtech.com
+
+
+### Prerequisites
+
+**Node ^= v16.13.0**
+
+**Android Studio / XCode (Virtual Device Simulation)**
+
+**VS Code (IDE)**
+
+### Cloning the repository
+
+```shell
+git clone https://github.com/itsgvsrinivas/pop-quiz-reactnative-snr.git
+```
+
+## Running Project
+
+To run your project, connect your physical device via usb and turn on USB Debugging or start Android Virtual Device, then navigate to the root directory and run one of the following npm commands:
+
+```shell
+npm i 
+npm run android
+npm run ios
+npm start -- --reset-cache
+```
+
+To Build APK File, Run:
+
+```shell
+npm run android -- --mode="release"
+or
+cd android
+./gradlew assembleRelease
+```
+
+Android Build APK can be found at: `https://install.appcenter.ms/users/itsgvsrinivas/apps/tmdbapp/distribution_groups/regov`
+
+### Funcionalities:
+
+- Login using username and password (created in www.themoviedb.org)
+- Tab bar with Homee, WatchList and Profile tabs
+- Tap on Movie card to goto Details screen.
+- Navigate back by cliking on Back Button on Header.
+- Search with movie name to navigate to Search screen with results.
+- On the search screen - Tap on Movie card to goto its Details screen.
+- On the details screen, user can view movie details, mark the movie to favourites and add to watchlist
+- Profile scree showing the avatar and features to go through movies of My favourite and My ratings
+
+### Coding
+
+- Used React Navigation and Tab navigation 
+- Redux Toolkit for user state management
+- Added utility and constant files for strings, url, assets, util functions and custom fonts
+- Axios library for asynchronous HTTP requests.
+- Added basic validations and check for network connection
